@@ -46,6 +46,12 @@ def extract_joins(select):
     return joins
 
 
+def format_sql(expr):
+    try:
+        return sqlglot.parse_one(expr).sql(pretty=True)
+    except:
+        return expr  # fallback if parsing fails
+
 def analyze_query(query):
     try:
         parsed = sqlglot.parse_one(query)
@@ -102,13 +108,14 @@ if query:
     st.code(full_query.sql(pretty=True), language='sql')
 
     for i, res in enumerate(results):
-        st.subheader(f"SELECT #{i+1}")
 
         if "error" in res:
             st.error(res["error"])
             continue
 
-        st.code(res["query"], language='sql')
+        if len(results) > 1:
+            st.subheader(f"SELECT {i+1}")
+            st.code(res["query"], language='sql')
 
         st.subheader("Columns")
         st.dataframe(pd.DataFrame(res["columns"], columns=["Column"]))
